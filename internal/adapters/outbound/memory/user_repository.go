@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"your-module/internal/domain/user"
+	"erebos/internal/domain/user"
 )
 
 type UserRepository struct {

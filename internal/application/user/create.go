@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"your-module/internal/domain/user"
+	"erebos/internal/domain/user"
 )
 
 type CreateUser struct {

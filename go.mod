@@ -1,3 +1,3 @@
-module github.com/izadi-a/erebos
+module erebos
 
 go 1.25.5
