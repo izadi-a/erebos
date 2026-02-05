@@ -25,7 +25,7 @@ func (r *SQLiteUserRepository) Create(ctx context.Context, user *user.User) erro
 	return err
 }
 
-func (r *SQLiteUserRepository) FindByID(ctx context.Context, id int64) (*user.User, error) {
+func (r *SQLiteUserRepository) FindByID(ctx context.Context, id string) (*user.User, error) {
 	row := r.db.QueryRowContext(ctx,
 		"SELECT id, name, email FROM users WHERE id = ?",
 		id,

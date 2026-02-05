@@ -14,11 +14,11 @@ func NewCreateUser(repo user.Repository) *CreateUser {
 	return &CreateUser{repo: repo}
 }
 
-func (uc *CreateUser) Execute(ctx context.Context, email string) (*user.User, error) {
+func (uc *CreateUser) Execute(ctx context.Context, email string, name string) (*user.User, error) {
 	u := &user.User{
 		ID:    "uuid-here",
 		Email: email,
-		Name:  "test",
+		Name:  name,
 	}
 	return u, uc.repo.Create(ctx, u)
 }
