@@ -1,9 +1,12 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 
 	"erebos/internal/domain/user"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type SQLiteUserRepository struct {
@@ -14,7 +17,7 @@ func NewSQLiteUserRepository(db *sql.DB) *SQLiteUserRepository {
 	return &SQLiteUserRepository{db: db}
 }
 
-func (r *SQLiteUserRepository) Create(user *user.User) error {
+func (r *SQLiteUserRepository) Create(ctx context.Context, user *user.User) error {
 	_, err := r.db.Exec(
 		"INSERT INTO users(name, email) VALUES (?, ?)",
 		user.Name, user.Email,
@@ -22,8 +25,8 @@ func (r *SQLiteUserRepository) Create(user *user.User) error {
 	return err
 }
 
-func (r *SQLiteUserRepository) GetByID(id int64) (*user.User, error) {
-	row := r.db.QueryRow(
+func (r *SQLiteUserRepository) FindByID(ctx context.Context, id int64) (*user.User, error) {
+	row := r.db.QueryRowContext(ctx,
 		"SELECT id, name, email FROM users WHERE id = ?",
 		id,
 	)
