@@ -6,19 +6,30 @@ import (
 	"erebos/internal/domain/user"
 )
 
-type CreateUser struct {
+type UserService struct {
 	repo user.Repository
 }
 
-func NewCreateUser(repo user.Repository) *CreateUser {
-	return &CreateUser{repo: repo}
+func NewUserService(repo user.Repository) *UserService {
+	return &UserService{repo: repo}
 }
 
-func (uc *CreateUser) Execute(ctx context.Context, email string, name string) (*user.User, error) {
-	u := &user.User{
-		ID:    "uuid-here",
-		Email: email,
-		Name:  name,
+func (s *UserService) ChangePassword(ctx context.Context, id, newPassword string) error {
+	u, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
 	}
-	return u, uc.repo.Create(ctx, u)
+	if err := u.ChangePassword(newPassword); err != nil {
+		return err
+	}
+	return s.repo.Update(ctx, u)
+}
+
+func (s *UserService) ChangeName(ctx context.Context, id, newName string) error {
+	u, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	u.ChangeName(newName)
+	return s.repo.Update(ctx, u)
 }

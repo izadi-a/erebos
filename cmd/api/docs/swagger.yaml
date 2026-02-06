@@ -1,0 +1,127 @@
+definitions:
+  http.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  http.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  http.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.UsersResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/http.UserResponse'
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Create a user with name, email, password
+      parameters:
+      - description: User info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - user
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Deleted user
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Delete a new user
+      tags:
+      - user
+    get:
+      consumes:
+      - application/json
+      description: Fetch a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Got user
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - user
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all users
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Got users
+          schema:
+            $ref: '#/definitions/http.UsersResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - user
+swagger: "2.0"
