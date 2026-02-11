@@ -5,38 +5,101 @@ import (
 
 	"erebos/internal/application/base"
 	"erebos/internal/domain/user"
+	"erebos/internal/ports"
 )
 
-type UserService struct {
+type CreateUserUseCase struct {
 	base.BaseService
+	Tx      base.TxManager
 	service *user.UserService
 }
 
-func NewUserUseCases(service *user.UserService) *UserService {
-	return &UserService{service: service}
+type CreateUserDTO struct {
+	Id    string
+	Name  string
+	Email string
 }
 
-func (uc *UserService) CreateUser(ctx context.Context, name, email, password string) (*user.User, error) {
+func NewUserUseCases(service *user.UserService) *CreateUserUseCase {
+	return &CreateUserUseCase{service: service}
+}
+
+func (uc *CreateUserUseCase) CreateUser(ctx context.Context, name, email, password string) (*CreateUserDTO, error) {
 	uc.Log("Creating user: " + name)
-	return uc.service.Create(ctx, name, email, password)
+	var result *CreateUserDTO
+
+	err := uc.Tx.WithTransaction(ctx, ports.Write, func(txCtx context.Context) error {
+		u, err := uc.service.Create(txCtx, name, email, password)
+		if err != nil {
+			return err
+		}
+
+		result = &CreateUserDTO{
+			Id:    u.ID,
+			Name:  u.Name,
+			Email: u.Email}
+		return nil
+	})
+	return result, err
 }
 
-func (uc *UserService) FindUserByID(ctx context.Context, id string) (*user.User, error) {
+func (uc *CreateUserUseCase) FindUserByID(ctx context.Context, id string) (*CreateUserDTO, error) {
 	uc.Log("Finding user by ID: " + id)
-	return uc.service.FindByID(ctx, id)
+
+	var result *CreateUserDTO
+
+	err := uc.Tx.WithTransaction(ctx, ports.Read, func(txCtx context.Context) error {
+		u, err := uc.service.FindByID(txCtx, id)
+		if err != nil {
+			return err
+		}
+
+		result = &CreateUserDTO{
+			Id:    u.ID,
+			Name:  u.Name,
+			Email: u.Email}
+		return nil
+	})
+	return result, err
 }
 
-func (uc *UserService) FindAllUsers(ctx context.Context) ([]*user.User, error) {
+func (uc *CreateUserUseCase) FindAllUsers(ctx context.Context) ([]*CreateUserDTO, error) {
 	uc.Log("Finding all users")
-	return uc.service.FindAll(ctx)
+
+	var result []*CreateUserDTO
+
+	err := uc.Tx.WithTransaction(ctx, ports.Read, func(txCtx context.Context) error {
+		users, err := uc.service.FindAll(ctx)
+		if err != nil {
+			return err
+		}
+
+		result = make([]*CreateUserDTO, 0, len(users))
+		for _, u := range users {
+			result = append(result, &CreateUserDTO{
+				Id:    u.ID,
+				Name:  u.Name,
+				Email: u.Email,
+			})
+		}
+		return nil
+	})
+
+	return result, err
 }
 
-func (uc *UserService) ChangePassword(ctx context.Context, id, password string) error {
+func (uc *CreateUserUseCase) ChangePassword(ctx context.Context, id, password string) error {
 	uc.Log("Changing password for user ID: " + id)
-	return uc.service.ChangePassword(ctx, id, password)
+
+	return uc.Tx.WithTransaction(ctx, ports.Write, func(ctx context.Context) error {
+		return uc.service.ChangePassword(ctx, id, password)
+	})
 }
 
-func (uc *UserService) DeleteUser(ctx context.Context, id string) error {
+func (uc *CreateUserUseCase) DeleteUser(ctx context.Context, id string) error {
 	uc.Log("Deleting user ID: " + id)
-	return uc.service.Delete(ctx, id)
+
+	return uc.Tx.WithTransaction(ctx, ports.Write, func(ctx context.Context) error {
+		return uc.service.Delete(ctx, id)
+	})
 }
