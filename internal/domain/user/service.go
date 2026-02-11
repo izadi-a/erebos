@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"erebos/internal/util"
 )
 
 type UserService struct {
@@ -21,6 +20,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id, newPassword string
 	if err := u.ChangePassword(newPassword); err != nil {
 		return err
 	}
+	u.SetModified("admin")
 	return s.userRepo.Update(ctx, u)
 }
 
@@ -30,12 +30,12 @@ func (s *UserService) ChangeName(ctx context.Context, id, newName string) error 
 		return err
 	}
 	u.ChangeName(newName)
+	u.SetModified("admin")
 	return s.userRepo.Update(ctx, u)
 }
 
 func (s *UserService) Create(ctx context.Context, name, email, password string) (*User, error) {
 	u := &User{
-		ID:           util.GenerateID(),
 		Name:         name,
 		Email:        email,
 		PasswordHash: password,
@@ -43,6 +43,7 @@ func (s *UserService) Create(ctx context.Context, name, email, password string) 
 	// if err := validateEmail(u.Email); err != nil {
 	// 	return nil, err
 	// }
+	u.SetCreated("admin")
 	return u, s.userRepo.Create(ctx, u)
 }
 

@@ -1,9 +1,12 @@
 package user
 
-import "errors"
+import (
+	"erebos/internal/base"
+	"errors"
+)
 
 type User struct {
-	ID           string
+	base.BaseEntity
 	Name         string
 	Email        string
 	PasswordHash string
