@@ -1,11 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
 	httpAdapter "erebos/internal/adapters/inbound/http"
+	"erebos/internal/adapters/outbound/persistence"
+
 	sqlite "erebos/internal/adapters/outbound/persistence/sqlite"
 	"erebos/internal/infrastructure/database"
 
@@ -30,16 +31,21 @@ func main() {
 
 	logger := loginfra.NewFileLogger("./app.log")
 
-	// DB (SQLite)
-	db, err := sql.Open("sqlite3", "./app.db")
+	// // DB (SQLite)
+	// db, err := sql.Open("sqlite3", "./app.db")
+	// if err != nil {
+	// 	logger.Fatal(err)
+	// }
+	// db.SetMaxOpenConns(1)
+	// db.SetMaxIdleConns(1)
+	// defer db.Close()
+
+	db, err := persistence.NewSQLiteDB("./app.db")
 	if err != nil {
 		logger.Fatal(err)
 	}
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
-	defer db.Close()
 
-	if err := database.RunMigrations(db); err != nil {
+	if err := database.AutoMigrate(db); err != nil {
 		log.Fatal(err)
 	}
 

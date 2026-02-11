@@ -1,6 +1,11 @@
 package database
 
-import "database/sql"
+import (
+	"database/sql"
+	"erebos/internal/adapters/outbound/persistence"
+
+	"gorm.io/gorm"
+)
 
 func RunMigrations(db *sql.DB) error {
 	query1 := `
@@ -23,4 +28,8 @@ func RunMigrations(db *sql.DB) error {
 	// _, _ = db.Exec(query2)
 
 	return nil
+}
+
+func AutoMigrate(db *gorm.DB) error {
+	return db.AutoMigrate(&persistence.UserModel{})
 }
