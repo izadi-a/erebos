@@ -10,7 +10,8 @@ import (
 	"erebos/internal/infrastructure/database"
 
 	// redisAdapter "erebos/internal/adapters/outbound/redis"
-	appuser "erebos/internal/application/user"
+	appUserCommand "erebos/internal/application/command/user"
+	appUserQuery "erebos/internal/application/query/user"
 	domainuser "erebos/internal/domain/user"
 	loginfra "erebos/internal/infrastructure/logger"
 
@@ -57,10 +58,10 @@ func main() {
 	// taskSvc := domaintask.NewService(taskRepo)
 
 	// --- Application UseCases ---
-	userCreateUC := appuser.NewCreateUseCase(userService)
-	userFindByIDUC := appuser.NewFindByIDUseCase(userService)
-	userFindAllUC := appuser.NewFindAllUseCase(userService)
-	userDeleteUC := appuser.NewDeleteUseCase(userService)
+	userCreateUC := appUserCommand.NewCreateUseCase(userService)
+	userFindByIDUC := appUserQuery.NewFindUserByIDUseCase(userService)
+	userFindAllUC := appUserQuery.NewFindAllUsersUseCase(userService)
+	userDeleteUC := appUserCommand.NewDeleteUseCase(userService)
 
 	// --- Inbound Adapters (HTTP Handlers) ---
 	userHandler := httpAdapter.NewUserHandler(userCreateUC, userFindByIDUC, userFindAllUC, userDeleteUC)

@@ -4,21 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
-	appuser "erebos/internal/application/user"
+	appUserCommand "erebos/internal/application/command/user"
+	appUserQuery "erebos/internal/application/query/user"
 )
 
 type UserHandler struct {
-	createUC   *appuser.CreateUseCase
-	findByIDUC *appuser.FindByIDUseCase
-	findAllUC  *appuser.FindAllUseCase
-	deleteUC   *appuser.DeleteUseCase
+	createUC   *appUserCommand.CreateUserUseCase
+	findByIDUC *appUserQuery.FindUserByIDUseCase
+	findAllUC  *appUserQuery.FindAllUsersUseCase
+	deleteUC   *appUserCommand.DeleteUserUseCase
 }
 
 func NewUserHandler(
-	createUC *appuser.CreateUseCase,
-	findByIDUC *appuser.FindByIDUseCase,
-	findAllUC *appuser.FindAllUseCase,
-	deleteUC *appuser.DeleteUseCase,
+	createUC *appUserCommand.CreateUserUseCase,
+	findByIDUC *appUserQuery.FindUserByIDUseCase,
+	findAllUC *appUserQuery.FindAllUsersUseCase,
+	deleteUC *appUserCommand.DeleteUserUseCase,
 ) *UserHandler {
 	return &UserHandler{
 		createUC:   createUC,
@@ -53,14 +54,14 @@ type UsersResponse struct {
 // @Success 201 {object} UserResponse "Created user"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Router /user [post]
-func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (handler *UserHandler) Create(w http.ResponseWriter, request *http.Request) {
 	var req CreateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid body", http.StatusBadRequest)
 		return
 	}
 
-	u, err := h.createUC.Execute(r.Context(), req.Name, req.Email, req.Password)
+	u, err := handler.createUC.Execute(request.Context(), &appUserCommand.CreateUserCommandDTO{Name: req.Name, Email: req.Email, Password: req.Password})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -78,8 +79,8 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} UsersResponse "Got users"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Router /users [get]
-func (h *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
-	users, err := h.findAllUC.Execute(r.Context())
+func (handler *UserHandler) FindAll(w http.ResponseWriter, request *http.Request) {
+	users, err := handler.findAllUC.Execute(request.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -96,8 +97,8 @@ func (h *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} UserResponse "Got user"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Router /user/{id} [get]
-func (h *UserHandler) FindByID(w http.ResponseWriter, r *http.Request, id string) {
-	u, err := h.findByIDUC.Execute(r.Context(), id)
+func (handler *UserHandler) FindByID(w http.ResponseWriter, request *http.Request, id string) {
+	u, err := handler.findByIDUC.Execute(request.Context(), appUserQuery.FindUserByIdQueryDTO{ID: id})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -114,8 +115,8 @@ func (h *UserHandler) FindByID(w http.ResponseWriter, r *http.Request, id string
 // @Success 201 {object} nil "Deleted user"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Router /user/{id} [delete]
-func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request, id string) {
-	if err := h.deleteUC.Execute(r.Context(), id); err != nil {
+func (handler *UserHandler) Delete(w http.ResponseWriter, request *http.Request, id string) {
+	if err := handler.deleteUC.Execute(request.Context(), &appUserCommand.DeleteUserCommandDTO{ID: id}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
